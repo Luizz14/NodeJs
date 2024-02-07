@@ -1,23 +1,23 @@
-import { FastifyInstance } from "fastify";
-import { randomUUID } from "crypto";
+import { FastifyInstance } from 'fastify'
+import { randomUUID } from 'crypto'
 
-import z from "zod";
-import { prisma } from "../../lib/prisma";
+import z from 'zod'
+import { prisma } from '../../lib/prisma'
 
 export async function voteOnPoll(app: FastifyInstance) {
-  app.post("/polls/:pollId/votes", async (request, reply) => {
+  app.post('/polls/:pollId/votes', async (request, reply) => {
     const voteOnPollBody = z.object({
       pollOptionId: z.string().uuid(),
-    });
+    })
 
     const voteOnPollParams = z.object({
       pollId: z.string().uuid(),
-    });
+    })
 
-    const { pollId } = voteOnPollParams.parse(request.params);
-    const { pollOptionId } = voteOnPollBody.parse(request.body);
+    const { pollId } = voteOnPollParams.parse(request.params)
+    const { pollOptionId } = voteOnPollBody.parse(request.body)
 
-    let { sessionId } = request.cookies;
+    let { sessionId } = request.cookies
 
     if (sessionId) {
       const userPreviusVoteOnPoll = await prisma.vote.findUnique({
@@ -27,7 +27,7 @@ export async function voteOnPoll(app: FastifyInstance) {
             pollId,
           },
         },
-      });
+      })
 
       if (
         userPreviusVoteOnPoll &&
@@ -37,23 +37,23 @@ export async function voteOnPoll(app: FastifyInstance) {
           where: {
             id: userPreviusVoteOnPoll.id,
           },
-        });
+        })
       } else if (userPreviusVoteOnPoll) {
         return reply.code(400).send({
-          error: "User already voted on this poll",
-        });
+          error: 'User already voted on this poll',
+        })
       }
     }
 
     if (!sessionId) {
-      sessionId = randomUUID();
+      sessionId = randomUUID()
 
-      reply.setCookie("sessionId", sessionId, {
-        path: "/",
+      reply.setCookie('sessionId', sessionId, {
+        path: '/',
         maxAge: 60 * 60 * 24 * 30,
         signed: true,
         httpOnly: true,
-      });
+      })
     }
 
     await prisma.vote.create({
@@ -62,8 +62,8 @@ export async function voteOnPoll(app: FastifyInstance) {
         pollId,
         pollOptionId,
       },
-    });
+    })
 
-    return reply.code(201).send();
-  });
+    return reply.code(201).send()
+  })
 }
