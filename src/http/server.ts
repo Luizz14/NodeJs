@@ -1,5 +1,6 @@
 import fastify from 'fastify'
 import cookie from '@fastify/cookie'
+import webSocket from '@fastify/websocket'
 
 import { getPoll } from './routes/get-poll'
 import { createPoll } from './routes/create-poll'
@@ -11,6 +12,8 @@ app.register(cookie, {
   secret: 'polls-app-nlw',
   hook: 'onRequest',
 })
+
+app.register(webSocket)
 
 app.register(createPoll)
 app.register(getPoll)
